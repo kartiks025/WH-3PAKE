@@ -26,4 +26,21 @@ int main()
     printf("Hello message sent\n"); 
     int valread = read( sock_S , buffer, 1024); 
     printf("%s\n",buffer ); 
+
+    int server_fd;
+    struct sockaddr_in address = createServer(PORTB, server_fd);
+    int addrlen = sizeof(address); 
+    if (listen(server_fd, 3) < 0) 
+    { 
+        perror("listen"); 
+        exit(EXIT_FAILURE); 
+    } 
+    int sock_A;
+    if ((sock_A = accept(server_fd, (struct sockaddr *)&address,  
+                       (socklen_t*)&addrlen))<0) 
+    { 
+        perror("accept"); 
+        exit(EXIT_FAILURE); 
+    }
+
 } 
