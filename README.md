@@ -10,7 +10,7 @@ Fixed and Terminology -
 
 Trusted part(Server) S generates and publishes -
   a. Generator g of group G
-  b. Symmetric Encryption Schemes 
+  b. Symmetric Encryption Schemes
     Ciphers -
     i. AES(Rijndael)
     ii. Twofish
@@ -36,7 +36,8 @@ Steps -
 9. S -> Compute Kas = g^(x*s1) and Kbs = g^(y*s2)
 10. S -> Pick r at random from On
 11. S -> Pick t1 and t2 randomly from an arbitrary long enough set of integers - let's say Z{-1000-1000}
-12. S -> For Captcha 
+12. S -> For Captcha
+  1. http://brokestream.com/captcha.html
   a. Pypi library - https://pypi.org/project/captcha/
   b. For embedding refer this - https://docs.python.org/2/extending/embedding.html
 13. S -> S computes M3 = E_{Kbs}(phi(r,t1)), M4 = E_{PWb}(g^s2), M5 = E_{Kas}(phi(r,t2)), M6 = E_{PWa}(g^s1)
