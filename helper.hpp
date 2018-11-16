@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <ctime> 
 #define LOCAL_IP "127.0.0.1"
+#define BLOCK_SIZE 16
 
 void xerr(const char* msg)
 {
@@ -50,6 +51,9 @@ char* decrypt(const char* in, int len, char* key, char* iv){
     if (err) {
         xerr("gcrypt: could not set iv");
     }
+    for(int i=0; i<len ;i++)
+      std::cout << (int)in[i] << " ";
+    std::cout << std::endl;
     char* out = new char[len];
     err = gcry_cipher_decrypt(hd,out,len,in,len);
     if (err) {
@@ -125,4 +129,34 @@ struct sockaddr_in createServer(int port, int& server_fd)
         exit(EXIT_FAILURE); 
     } 
     return address;
+}
+
+char* to_bytes(unsigned long long val)
+{
+  std::size_t sz = BLOCK_SIZE;
+  // std::cout << val << std::endl << std::endl;
+  char* ret = new char[sz];
+  while( sz-- )
+  {
+    if(val>0)
+        ret[sz] = (val&255);
+    else
+        ret[sz] = ' ';
+    val >>= 8;
+  }
+  // for(int i=0; i<sz ;i++)
+  //   std::cout << (int)ret[i] << std::endl;
+  // std::cout << ret << std::endl;
+  return ret;
+}
+
+unsigned long long to_long(char* bytes, int len)
+{
+  unsigned long long val = 0;
+  for(int i=0; i<len ; i++){
+    if (bytes[i]==32)//TODO
+        bytes[i]=0;
+    val = val*256 + bytes[i];
+  }
+  return val;
 }
