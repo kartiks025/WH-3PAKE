@@ -1,9 +1,14 @@
-FILES =  server.o clientA.o clientB.o
+CC = g++
+CCLIBS = -lgcrypt
+CCFLAGS = -std=c++11
 
-hello: $(FILES)
+src:= $(wildcard *.cpp)
+exe:= $(patsubst %.cpp, %, $(src))
 
-.cpp.o:
-        g++ -std=c++11 -lgcrypt $<
+all: $(exe)
+
+$(exe): % : %.cpp
+	$(CC) $(CCFLAGS) $(CCINCLUDES) $< $(CCLIBS) -o $@
 
 clean:
-        -rm *.o
+	rm $(exe)

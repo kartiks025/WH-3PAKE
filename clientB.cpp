@@ -9,7 +9,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime> 
-#include "helper.cpp"
+#include "helper.hpp"
 #include <cmath>
 #define PORTS 8080 
 #define PORTB 8081 
