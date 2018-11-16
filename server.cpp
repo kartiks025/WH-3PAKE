@@ -7,6 +7,7 @@
 #include <iostream>
 #include "helper.hpp"
 #include <vector>
+#include <cmath>
 #define PORTS 8080 
 #define BLOCK_SIZE 16
 
