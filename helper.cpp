@@ -1,5 +1,17 @@
 #include "gcrypt.h"
 #include <string>
+#include <unistd.h> 
+#include <arpa/inet.h>
+#include <stdio.h> 
+#include <sys/socket.h> 
+#include <stdlib.h> 
+#include <netinet/in.h> 
+#include <string> 
+#include <string.h>
+#include <iostream>
+#include <cstdlib>
+#include <ctime> 
+#define LOCAL_IP "127.0.0.1"
 
 void xerr(const char* msg)
 {
@@ -53,4 +65,33 @@ char* hash(const char* to_hash, int len){
 	char* hashed = new char[size];
 	gcry_md_hash_buffer(GCRY_MD_MD5, hashed, to_hash,len);
 	return hashed;
+}
+
+int connectSockToServer(int port)
+{
+    int sock = 0; 
+    struct sockaddr_in addr; 
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
+    { 
+        printf("\n Socket creation error \n"); 
+        return -1; 
+    } 
+    memset(&addr, '0', sizeof(addr)); 
+   
+    addr.sin_family = AF_INET; 
+    addr.sin_port = htons(port); 
+       
+    // Convert IPv4 and IPv6 addresses from text to binary form 
+    if(inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr)<=0)  
+    { 
+        printf("\nInvalid address/ Address not supported \n"); 
+        return -1; 
+    } 
+   
+    if (connect(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) 
+    { 
+        printf("\nConnection Failed \n"); 
+        return -1; 
+    } 
+    return sock;
 }

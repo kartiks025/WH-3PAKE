@@ -4,7 +4,10 @@
 #include <stdlib.h> 
 #include <netinet/in.h> 
 #include <string.h> 
-#define PORT 8080 
+#include <iostream>
+#define PORTS 8080 
+#define PORTB 8081
+ 
 int main() 
 { 
     int server_fd, new_socket, valread; 
@@ -15,7 +18,6 @@ int main()
     char hello[1024] = {};
     strncpy(hello, "Hello from server", sizeof(hello));
        
-    // Creating socket file descriptor 
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) 
     { 
         perror("socket failed"); 
@@ -55,5 +57,8 @@ int main()
     printf("%s\n",buffer ); 
     send(new_socket , hello , strlen(hello) , 0 ); 
     printf("Hello message sent\n"); 
+    // valread = read( new_socket , buffer, 1024);
+    // printf("%s\n",buffer );
+    // std::cout << M1 << std::endl;
     return 0; 
 } 
