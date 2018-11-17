@@ -50,4 +50,37 @@ int main()
     //   std::cout << (int)dec[i] << " ";
     std::cout << std::endl;
     send(sock_B, M1, BLOCK_SIZE, 0);
+
+    unsigned char M5[CAPTCHA_SIZE] = {0};
+    valread = recv(sock_B, M5, CAPTCHA_SIZE, 0);
+
+    unsigned char M6[BLOCK_SIZE] = {0};
+    valread = recv(sock_B, M6, BLOCK_SIZE, 0);
+
+    unsigned char M7[BLOCK_SIZE] = {0};
+    valread = recv(sock_B, M7, BLOCK_SIZE, 0);
+
+    char* gs1 = decrypt(M6,BLOCK_SIZE,keyA,ivA);
+    unsigned long long g_s1 = to_long(gs1,BLOCK_SIZE);
+
+    unsigned long long kas_ = ((((long long)pow(g_s1,x))%G+G)%G);
+    char* kas = hash(to_bytes(kas_), BLOCK_SIZE)
+
+    char* phi2 = decrypt(M5,CAPTCHA_SIZE,kas,ivA);
+
+    //TODO: display ph2 and take input
+
+    unsigned char r[6] = "abcde";
+    std::String M7_ = "1"+r+B+A;
+    char* M7_check = hash(M7_.c_str(),M7_.size());
+
+    //TODO: check if M7==M7_check
+
+    std::String M8_ = "1"+r+A+B;
+    char* M8 = hash(M8_.c_str(),M8_.size());
+
+    std::String SK_ = "2"+r+A+B;
+    char* SK = hash(SK_.c_str(),SK_.size());
+
+    send(sock_B, M8, BLOCK_SIZE, 0);
 } 

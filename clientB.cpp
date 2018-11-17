@@ -45,10 +45,7 @@ int main()
     }
 
     char M1[BLOCK_SIZE] = {0};
-
     int valread = recv(sock_A , M1, BLOCK_SIZE, 0);
-    // for(int i=0; i<BLOCK_SIZE ;i++)
-    //   std::cout << (int)M1[i] << std::endl;
 
 
     unsigned long long G = 19;
@@ -83,5 +80,28 @@ int main()
     unsigned char M6[BLOCK_SIZE] = {0};
     valread = recv(sock_S, M6, BLOCK_SIZE, 0);
 
+    char* gs2 = decrypt(M4,BLOCK_SIZE,keyB,ivB);
+    unsigned long long g_s2 = to_long(gs2,BLOCK_SIZE);
+
+    unsigned long long kbs_ = ((((long long)pow(g_s2,y))%G+G)%G);
+    char* kbs = hash(to_bytes(kbs_), BLOCK_SIZE)
+
+    char* phi1 = decrypt(M3,CAPTCHA_SIZE,kbs,ivB);
+
+    //TODO: display ph1 and take input
+
+    unsigned char r[6] = "abcde";
+    std::String M7_ = "1"+r+B+A;
+    char* M7 = hash(M7_.c_str(),M7_.size());
+
+    send(sock_A, M5, CAPTCHA_SIZE, 0);
+    send(sock_A, M6, BLOCK_SIZE, 0);
+    send(sock_A, M7, BLOCK_SIZE, 0);
+
+    char M8[BLOCK_SIZE] = {0};
+    valread = recv(sock_A , M8, BLOCK_SIZE, 0);
+
+    std::String SK_ = "2"+r+A+B;
+    char* SK = hash(SK_.c_str(),SK_.size());
 
 } 

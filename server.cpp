@@ -83,13 +83,13 @@ int main()
     unsigned long long s1 = rand()%p;
     unsigned long long s2 = rand()%p;
     unsigned long long kas_ = ((((long long)pow(g_x,s1))%G+G)%G);
-    unsigned long long kbs_ = ((((long long)pow(g_x,s2))%G+G)%G);
+    unsigned long long kbs_ = ((((long long)pow(g_y,s2))%G+G)%G);
 
     char* kas = hash(to_bytes(kas_), BLOCK_SIZE)
-    char* kbs = hash(to_bytes(kas_), BLOCK_SIZE)
+    char* kbs = hash(to_bytes(kbs_), BLOCK_SIZE)
 
-    unsigned char l[6] = "abcde";
-    unsigned char phi1[CAPTCHA_SIZE] = create_captcha(l);
+    unsigned char r[6] = "abcde";
+    unsigned char phi1[CAPTCHA_SIZE] = create_captcha(r);
     char* M3 = encrypt(phi1,CAPTCHA_SIZE,kbs,ivB);
 
     unsigned long long g_s2 = ((((long long)pow(g,s2))%G+G)%G);
@@ -97,7 +97,7 @@ int main()
     char* gs2 = to_bytes(g_s2);
     char* M4 = encrypt(gs2,BLOCK_SIZE,keyB,ivB);
 
-    unsigned char phi2[CAPTCHA_SIZE] = create_captcha(l);
+    unsigned char phi2[CAPTCHA_SIZE] = create_captcha(r);
     char* M5 = encrypt(phi2,CAPTCHA_SIZE,kas,ivA);
 
     unsigned long long g_s1 = ((((long long)pow(g,s1))%G+G)%G);
