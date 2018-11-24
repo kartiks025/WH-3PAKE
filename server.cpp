@@ -82,7 +82,7 @@ int main()
     srand(time(NULL));
     unsigned long long s1 = rand()%p;
     unsigned long long s2 = rand()%p;
-    unsigned long long kas_ = ((((long long)pow(g_x,s1))%G+G)%G);
+    unsigned long long kas_ = ((((long long)pow(g_x,s1))%G+G)%G);//TODO: modular exponentiation
     unsigned long long kbs_ = ((((long long)pow(g_y,s2))%G+G)%G);
 
     char* kas = hash(to_bytes(kas_), BLOCK_SIZE)

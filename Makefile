@@ -7,9 +7,10 @@ exe:= $(patsubst %.cpp, %, $(src))
 
 all: captcha $(exe)
 
-captcha: captcha/captcha.c captcha/captcha.hpp
-	gcc -c -fPIC captcha/captcha.c -o captcha/captcha
-	gcc -shared -o libcaptcha.so captcha/captcha
+captcha: 
+	gcc -c captcha/captcha.c -o captcha/captcha
+	gcc -shared -o libcaptcha.so captcha
+	g++ -L captcha.cpp -o captcha.o -lcaptcha
 
 $(exe): % : %.cpp
 	$(CC) $(CCFLAGS) $(CCINCLUDES) $< $(CCLIBS) -o $@

@@ -160,3 +160,17 @@ unsigned long long to_long(char* bytes, int len)
   }
   return val;
 }
+
+unsigned long long power(unsigned long long x, unsigned long long y, unsigned long long p)
+{
+    int res = 1;
+    x %= p;
+    while (y > 0) 
+    { 
+        if (y & 1) 
+            res = (res*x) % p; 
+        y = y>>1;
+        x = (x*x) % p;   
+    } 
+    return res; 
+}
