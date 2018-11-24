@@ -13,6 +13,7 @@
 #include <ctime> 
 #define LOCAL_IP "127.0.0.1"
 #define BLOCK_SIZE 16
+#define RANGE_SIZE 26
 
 void xerr(const char* msg)
 {
@@ -159,4 +160,27 @@ unsigned long long to_long(char* bytes, int len)
     val = val*256 + bytes[i];
   }
   return val;
+}
+
+std::string get_random_string(int len)
+{
+    static const char *letters="abcdafahijklmnopqrstuvwxyz";
+    std::string l = "";
+    for (int i = 0; i < len; ++i)
+    {
+        unsigned long long r = rand()%RANGE_SIZE;
+        l += letters[r];
+    }
+    return l;
+}
+
+int valid_string(std::string l)
+{
+    std::string letters="abcdafahijklmnopqrstuvwxyz";
+    for (int i = 0; i < l.size(); ++i)
+    {
+        if(letters.find(l[i])==std::string::npos)
+            return 0;
+    }
+    return 1;
 }

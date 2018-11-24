@@ -1,6 +1,6 @@
 
 const int gifsize;
-void captcha(unsigned char im[210*200], unsigned char l[16]);
+void captcha(unsigned char im[210*200], unsigned char l[15]);
 void makegif(unsigned char im[210*200], unsigned char gif[gifsize]);
 
 #include <unistd.h>
@@ -170,10 +170,10 @@ static void filter(unsigned char im[210*200]) {
 
 static const char *letters="abcdafahijklmnopqrstuvwxyz";
 
-void captcha(unsigned char im[210*200], unsigned char l[16]) {
+void captcha(unsigned char im[210*200], unsigned char l[15]) {
 	unsigned char swr[200];
 	uint8_t s1,s2;
-	unsigned char mm[16];
+	unsigned char mm[15];
 	int f=open("/dev/urandom",O_RDONLY);
 	read(f,mm,15); read(f,swr,200); read(f,dr,sizeof(dr)); read(f,&s1,1); read(f,&s2,1);
 	close(f);

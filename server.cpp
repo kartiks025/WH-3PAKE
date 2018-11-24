@@ -9,9 +9,13 @@
 #include "captcha.hpp"
 #include <vector>
 #include <cmath>
+#include "captcha/captcha.cpp"
 #define PORTS 8080 
 #define BLOCK_SIZE 16
-#define CAPTCHA_SIZE 70*200
+#define CAPTCHA_SIZE 17646*3
+#define STRING_SIZE 15
+#define IDENTITY_A "CLIENTA"
+#define IDENTITY_B "CLIENTB"
 
 int main() 
 { 
@@ -60,10 +64,10 @@ int main()
 
     char M1[BLOCK_SIZE] = {0};
     char M2[BLOCK_SIZE] = {0};
-    int valread = recv(client_sockets[0] , M1, BLOCK_SIZE, 0);
+    int valread = recv(client_sockets[0] , M1, BLOCK_SIZE, MSG_WAITALL);
     // for(int i=0; i<BLOCK_SIZE ;i++)
     //   std::cout << (int)M1[i] << std::endl;
-    valread = recv(client_sockets[0] , M2, BLOCK_SIZE, 0);
+    valread = recv(client_sockets[0] , M2, BLOCK_SIZE, MSG_WAITALL);
     // for(int i=0; i<BLOCK_SIZE ;i++)
     //   std::cout << (int)M2[i] << std::endl;
 
@@ -83,12 +87,12 @@ int main()
     unsigned long long s1 = rand()%p;
     unsigned long long s2 = rand()%p;
     unsigned long long kas_ = ((((long long)pow(g_x,s1))%G+G)%G);
-    unsigned long long kbs_ = ((((long long)pow(g_x,s2))%G+G)%G);
+    unsigned long long kbs_ = ((((long long)pow(g_y,s2))%G+G)%G);
 
-    char* kas = hash(to_bytes(kas_), BLOCK_SIZE)
-    char* kbs = hash(to_bytes(kas_), BLOCK_SIZE)
+    char* kas = hash(to_bytes(kas_), BLOCK_SIZE);
+    char* kbs = hash(to_bytes(kbs_), BLOCK_SIZE);
 
-    unsigned char l[6] = "abcde";
+    unsigned char l[STRING_SIZE] = get_random_string(STRING_SIZE);
     unsigned char phi1[CAPTCHA_SIZE] = create_captcha(l);
     char* M3 = encrypt(phi1,CAPTCHA_SIZE,kbs,ivB);
 

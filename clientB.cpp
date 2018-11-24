@@ -11,10 +11,15 @@
 #include <ctime> 
 #include "helper.hpp"
 #include <cmath>
+#include "captcha/captcha.cpp"
 #define PORTS 8080 
 #define PORTB 8081 
 #define BLOCK_SIZE 16
-#define CAPTCHA_SIZE 70*200
+#define CAPTCHA_SIZE 210*200
+#define STRING_SIZE 15
+#define IDENTITY_A "CLIENTA"
+#define IDENTITY_B "CLIENTB"
+
 
 int main() 
 { 
@@ -46,7 +51,7 @@ int main()
 
     char M1[BLOCK_SIZE] = {0};
 
-    int valread = recv(sock_A , M1, BLOCK_SIZE, 0);
+    int valread = recv(sock_A , M1, BLOCK_SIZE, MSG_WAITALL);
     // for(int i=0; i<BLOCK_SIZE ;i++)
     //   std::cout << (int)M1[i] << std::endl;
 
@@ -72,16 +77,49 @@ int main()
     send(sock_S, M2, BLOCK_SIZE, 0);
 
     unsigned char M3[CAPTCHA_SIZE] = {0};
-    valread = recv(sock_S, M3, CAPTCHA_SIZE, 0);
+    valread = recv(sock_S, M3, CAPTCHA_SIZE, MSG_WAITALL);
 
     unsigned char M4[BLOCK_SIZE] = {0};
-    valread = recv(sock_S, M4, BLOCK_SIZE, 0);
+    valread = recv(sock_S, M4, BLOCK_SIZE, MSG_WAITALL);
 
     unsigned char M5[CAPTCHA_SIZE] = {0};
-    valread = recv(sock_S, M5, CAPTCHA_SIZE, 0);
+    valread = recv(sock_S, M5, CAPTCHA_SIZE, MSG_WAITALL);
 
     unsigned char M6[BLOCK_SIZE] = {0};
-    valread = recv(sock_S, M6, BLOCK_SIZE, 0);
+    valread = recv(sock_S, M6, BLOCK_SIZE, MSG_WAITALL);
 
+    char* gs2 = decrypt(M4,BLOCK_SIZE,keyB,ivB);
+    unsigned long long g_s2 = to_long(gs2,BLOCK_SIZE);
+    
+    unsigned long long kbs_ = ((((long long)pow(g_s2,y))%G+G)%G);
+    char* kbs = hash(to_bytes(kbs_), BLOCK_SIZE);
+    char* phi1 = decrypt(M3,CAPTCHA_SIZE,kbs,ivB);
+
+    int save_captcha = view_captcha(phi1, "captcha1.gif");
+    std::string captcha_string;
+
+    std::cin >> captcha_string ;
+
+    if(!valid_string(captcha_string))
+        return -1;
+
+    std::string to_hash1 = "1"+captcha_string+IDENTITY_B+IDENTITY_A;
+    char* M7 = hash(to_hash1.c_str(), to_hash1.size());
+
+    send(sock_A, M5, CAPTCHA_SIZE, 0);
+    send(sock_A, M6, BLOCK_SIZE, 0);
+    send(sock_A, M7, BLOCK_SIZE, 0);
+
+    unsigned char M8[BLOCK_SIZE] = {0};
+    valread = recv(sock_A, M8, BLOCK_SIZE, MSG_WAITALL);
+
+    std::string to_hash2 = "1"+captcha_string+IDENTITY_A+IDENTITY_B;
+    char* this_M8 = hash(to_hash2.c_str(), to_hash2.size());
+
+    if(strcmp(this_M8, M8)!=0)
+        return -1;
+
+    std::string to_hash3 = "2"+captcha_string+IDENTITY_A+IDENTITY_B;
+    char* sk = hash(to_hash3.c_str(), to_hash3.size());
 
 } 

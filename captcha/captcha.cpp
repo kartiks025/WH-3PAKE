@@ -7,17 +7,19 @@ extern "C"
 	void makegif(unsigned char im[210*200], unsigned char gif[]);
 }
 
-int create_captcha(unsigned char l[16]) {
+unsigned char *create_captcha(unsigned char l[15]) {
 	unsigned char im[210*200];
 	unsigned char gif[17646*3];
 
 	captcha(im,l);
 	makegif(im,gif);
 
-	// std::cout << gif <<std::endl;
+	return gif;
+}
 
-	std::cout.write(reinterpret_cast<const char*>(gif),17646*3);
-	std::cerr.write(reinterpret_cast<const char*>(l),15);
-
+int view_captcha(char gif[17646*3], std::string file_name) {
+	std::ofstream gif_file;
+	gif_file.open(file_name);
+	gif_file.write(reinterpret_cast<const char*>(gif),17646*3);
 	return 0;
 }
