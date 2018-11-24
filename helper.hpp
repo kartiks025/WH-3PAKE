@@ -10,14 +10,54 @@
 #include <string.h>
 #include <iostream>
 #include <cstdlib>
+#include <random>
 #include <ctime> 
+#include <cmath>
+#include <sstream>
+#include <iomanip>
 #define LOCAL_IP "127.0.0.1"
 #define BLOCK_SIZE 16
+#define RANGE_SIZE 25
+#define PORTS 8080 
+#define PORTB 8081 
+#define BLOCK_SIZE 16
+#define CAPTCHA_SIZE 17646*3
+#define STRING_SIZE 15
+#define IDENTITY_A "CLIENTA"
+#define IDENTITY_B "CLIENTB"
+
+unsigned long long G = 1451;
+unsigned long long g = 3; 
+unsigned long long p = 2903;
+
+std::mt19937 my_gen;
+std::uniform_int_distribution<> my_dist = std::uniform_int_distribution<> (0,1);
 
 void xerr(const char* msg)
 {
     fprintf(stderr, "%s\n", msg);
     exit(1);
+}
+
+void mtInit()
+{
+    std::random_device dev;
+    std::string seed = std::to_string(dev()) + std::to_string(dev()) + std::to_string(dev()) + std::to_string(dev());
+    std::seed_seq new_seed(seed.begin(), seed.end());
+    my_gen = std::mt19937(new_seed);
+    my_dist = std::uniform_int_distribution<> (0,1);
+}
+
+unsigned long long getValFromGroup(unsigned long long mod)
+{
+    unsigned long long val = mod;
+    while(val >= mod){
+        unsigned int num_bits = ceil(log2(mod));
+        val = 0;
+        for(int i=0; i<num_bits; i++)
+            val = val*2+my_dist(my_gen);
+    }
+    return val;
 }
 
 char* encrypt(const char* in, int len, char* key, char* iv){
@@ -51,9 +91,6 @@ char* decrypt(const char* in, int len, char* key, char* iv){
     if (err) {
         xerr("gcrypt: could not set iv");
     }
-    for(int i=0; i<len ;i++)
-      std::cout << (int)in[i] << " ";
-    std::cout << std::endl;
     char* out = new char[len];
     err = gcry_cipher_decrypt(hd,out,len,in,len);
     if (err) {
@@ -86,7 +123,7 @@ int connectSockToServer(int port)
     addr.sin_port = htons(port); 
        
     // Convert IPv4 and IPv6 addresses from text to binary form 
-    if(inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr)<=0)  
+    if(inet_pton(AF_INET, LOCAL_IP, &addr.sin_addr)<=0)  
     { 
         printf("\nInvalid address/ Address not supported \n"); 
         return -1; 
@@ -135,27 +172,26 @@ char* to_bytes(unsigned long long val)
 {
   std::size_t sz = BLOCK_SIZE;
   // std::cout << val << std::endl << std::endl;
-  char* ret = new char[sz];
+  unsigned char* ret = new unsigned char[sz];
   while( sz-- )
   {
     if(val>0)
         ret[sz] = (val&255);
     else
-        ret[sz] = ' ';
+        ret[sz] = 0;
     val >>= 8;
   }
   // for(int i=0; i<sz ;i++)
   //   std::cout << (int)ret[i] << std::endl;
   // std::cout << ret << std::endl;
-  return ret;
+  return reinterpret_cast<char*>(ret);
 }
 
-unsigned long long to_long(char* bytes, int len)
+unsigned long long to_long(char* s_bytes, int len)
 {
+  unsigned char* bytes = reinterpret_cast<unsigned char*>(s_bytes);
   unsigned long long val = 0;
   for(int i=0; i<len ; i++){
-    if (bytes[i]==32)//TODO
-        bytes[i]=0;
     val = val*256 + bytes[i];
   }
   return val;
@@ -172,5 +208,40 @@ unsigned long long power(unsigned long long x, unsigned long long y, unsigned lo
         y = y>>1;
         x = (x*x) % p;   
     } 
-    return res; 
+    return res;
+} 
+
+std::string get_random_string(int len)
+{
+    static const char *letters="abcdafahijklmnopqrstuvwxy";
+    std::string l = "";
+    for (int i = 0; i < len; ++i)
+    {
+        unsigned long long r = getValFromGroup(RANGE_SIZE);
+        l += letters[r];
+    }
+    return l;
+}
+
+int valid_string(std::string l)
+{
+    std::string letters="abcdafahijklmnopqrstuvwxy";
+    for (int i = 0; i < l.size(); ++i)
+    {
+        if(letters.find(l[i])==std::string::npos)
+            return 0;
+    }
+    return 1;
+}
+
+std::string prettyHash(char* s_hash) // bytes to hex
+{
+    unsigned char* hash = reinterpret_cast<unsigned char*>(s_hash);
+    std::stringstream ss;
+    ss<<std::hex;
+    for (int i=0;i<BLOCK_SIZE;i++)
+    {
+        ss<<(unsigned int)hash[i]<< " ";
+    }
+    return ss.str();
 }

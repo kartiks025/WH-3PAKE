@@ -3,22 +3,23 @@
 // #include<conio.h>
 extern "C"
 {
-	void captcha(unsigned char im[70*200], unsigned char l[6]);
-	void makegif(unsigned char im[70*200], unsigned char gif[]);
+	void captcha(unsigned char im[210*200], unsigned char l[16]);
+	void makegif(unsigned char im[210*200], unsigned char gif[]);
 }
 
-int main() {
-	unsigned char l[6] = "abcda";
-	unsigned char im[70*200];
-	unsigned char gif[17646];
+unsigned char *create_captcha(unsigned char l[15]) {
+	unsigned char im[210*200];
+	unsigned char *gif = new unsigned char[17646*3];
 
 	captcha(im,l);
 	makegif(im,gif);
 
-	std::cout << gif <<std::endl;
+	return gif;
+}
 
-	std::cout.write(reinterpret_cast<const char*>(gif),17646);
-	std::cerr.write(reinterpret_cast<const char*>(l),5);
-
+int view_captcha(unsigned char gif[17646*3], std::string file_name) {
+	std::ofstream gif_file;
+	gif_file.open(file_name);
+	gif_file.write(reinterpret_cast<const char*>(gif),17646*3);
 	return 0;
 }

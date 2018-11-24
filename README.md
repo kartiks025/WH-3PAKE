@@ -29,7 +29,7 @@ Steps -
 2. A -> Compute M1 = E_{PWa}(g^x) - Use specified encryption scheme from gcrypt
 3. A -> A sends M1 to B along with identities of A and B
 4. B -> On getting M1, B chooses y from Zp* - Same RNG as Step 1
-5. B -> Compute M2 = E_{PWa}(g^x) - Use specified encryption scheme from gcrypt
+5. B -> Compute M2 = E_{PWa}(g^y) - Use specified encryption scheme from gcrypt
 6. B -> B sends M1 and M2 to S with identities of A and B
 7. S -> S decrypts M1 and M2 to retrieve g^x and g^y
 8. S -> Pick s1 and s2 at random from Zp* - Same RNG as Step 1

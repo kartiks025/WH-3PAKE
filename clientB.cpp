@@ -11,22 +11,13 @@
 #include <ctime> 
 #include "helper.hpp"
 #include <cmath>
-#define PORTS 8080 
-#define PORTB 8081 
-#define BLOCK_SIZE 16
-#define CAPTCHA_SIZE 70*200
+#include "captcha/captcha.cpp"
+
 
 int main() 
 { 
+    mtInit();
     int sock_S = connectSockToServer(PORTS);
-
-    // char hello[1024] = {};
-    // strncpy(hello, "Hello from B", sizeof(hello));
-
-    // send(sock_S , hello , strlen(hello) , 0 ); 
-    // printf("Hello message sent\n"); 
-    // int valread = read( sock_S , buffer, 1024); 
-    // printf("%s\n",buffer ); 
 
     int server_fd;
     struct sockaddr_in address = createServer(PORTB, server_fd);
@@ -45,63 +36,104 @@ int main()
     }
 
     char M1[BLOCK_SIZE] = {0};
-    int valread = recv(sock_A , M1, BLOCK_SIZE, 0);
 
 
-    unsigned long long G = 19;
-    unsigned long long g = 9; //TODO: QR(19) 4 16 7 9 17 11 6 5 1
+    int valread = recv(sock_A , M1, BLOCK_SIZE, MSG_WAITALL);
+    std::cout << "received M1" << std::endl;
+
     std::string passB = "kartik_singhal";
     std::string str_ivB = "hostel5";
     char* keyB = hash(passB.c_str(), passB.size());
     char* ivB = hash(str_ivB.c_str(), str_ivB.size());
-    unsigned long long p = 17;
-    srand(time(NULL));
-    unsigned long long y = rand()%p; // TODO: use a good PRNG over here
-    unsigned long long g_y = ((((long long)pow(g,y))%G+G)%G);
-    std::cout << g_y << std::endl;
+    unsigned long long y = getValFromGroup(p);
+    unsigned long long g_y =  power(g,y,p);
     char* gy = to_bytes(g_y);
+    // std::cout << "gy bytes: " << gy << std::endl;
+    // for(int i=0;i<BLOCK_SIZE;i++)
+    //     std::cout << (int)gy[i] << " " << std::endl;
+    // std::cout << std::endl;
+    std::cout << "gy: " << g_y << std::endl;
     char* M2 = encrypt(gy,BLOCK_SIZE,keyB,ivB);
-    for(int i=0; i<BLOCK_SIZE ;i++)
-      std::cout << (int)gy[i] << " ";
-    std::cout << std::endl;
+
+    std::cout << "calculated M2" << std::endl;
 
     send(sock_S, M1, BLOCK_SIZE, 0);
     send(sock_S, M2, BLOCK_SIZE, 0);
 
-    unsigned char M3[CAPTCHA_SIZE] = {0};
-    valread = recv(sock_S, M3, CAPTCHA_SIZE, 0);
+    std::cout << "sent M2" << std::endl;
 
-    unsigned char M4[BLOCK_SIZE] = {0};
-    valread = recv(sock_S, M4, BLOCK_SIZE, 0);
+    char M3[CAPTCHA_SIZE+6] = {0};
+    valread = recv(sock_S, M3, CAPTCHA_SIZE+6, MSG_WAITALL);
 
-    unsigned char M5[CAPTCHA_SIZE] = {0};
-    valread = recv(sock_S, M5, CAPTCHA_SIZE, 0);
+    char M4[BLOCK_SIZE] = {0};
+    valread = recv(sock_S, M4, BLOCK_SIZE, MSG_WAITALL);
 
-    unsigned char M6[BLOCK_SIZE] = {0};
-    valread = recv(sock_S, M6, BLOCK_SIZE, 0);
+    char M5[CAPTCHA_SIZE+6] = {0};
+    valread = recv(sock_S, M5, CAPTCHA_SIZE+6, MSG_WAITALL);
+
+    char M6[BLOCK_SIZE] = {0};
+    valread = recv(sock_S, M6, BLOCK_SIZE, MSG_WAITALL);
+
+    std::cout << "received M3, M4, M5, M6" << std::endl;
 
     char* gs2 = decrypt(M4,BLOCK_SIZE,keyB,ivB);
     unsigned long long g_s2 = to_long(gs2,BLOCK_SIZE);
 
-    unsigned long long kbs_ = ((((long long)pow(g_s2,y))%G+G)%G);
-    char* kbs = hash(to_bytes(kbs_), BLOCK_SIZE)
+    std::cout << "gs2: " << g_s2 << std::endl;
 
-    char* phi1 = decrypt(M3,CAPTCHA_SIZE,kbs,ivB);
+    unsigned long long kbs_ = power(g_s2,y,p);
+    std::cout << "kbs: " << kbs_ << std::endl;
 
-    //TODO: display ph1 and take input
+    char* kbs = hash(to_bytes(kbs_), BLOCK_SIZE);
+    char* phi1 = decrypt(M3,CAPTCHA_SIZE+6,kbs,ivB);
 
-    unsigned char r[6] = "abcde";
-    std::String M7_ = "1"+r+B+A;
-    char* M7 = hash(M7_.c_str(),M7_.size());
+    std::cout << "decrypted captcha" << std::endl;
 
-    send(sock_A, M5, CAPTCHA_SIZE, 0);
+    int save_captcha = view_captcha(reinterpret_cast<unsigned char*>(phi1), "captcha1.gif");
+    std::cout << "saved captcha, please see captcha1.gif and enter the 15 character long string:" << std::endl;
+    std::string captcha_string;
+
+    std::cin >> captcha_string ;
+
+    std::cout << "input from user: " << captcha_string << std::endl;
+
+    std::string to_hash1 = "1"+captcha_string+IDENTITY_B+IDENTITY_A;
+    std::cout << "H(1||r||B||A): " << to_hash1 << std::endl;
+    char* M7 = hash(to_hash1.c_str(), to_hash1.size());
+    std::cout << "M7: " << prettyHash(M7) << std::endl;
+    std::cout << "calculated M7" << std::endl;
+
+    send(sock_A, M5, CAPTCHA_SIZE+6, 0);
     send(sock_A, M6, BLOCK_SIZE, 0);
     send(sock_A, M7, BLOCK_SIZE, 0);
 
-    char M8[BLOCK_SIZE] = {0};
-    valread = recv(sock_A , M8, BLOCK_SIZE, 0);
+    std::cout << "sent M5, M6, M7" << std::endl;
 
-    std::String SK_ = "2"+r+A+B;
-    char* SK = hash(SK_.c_str(),SK_.size());
+
+    char M8[BLOCK_SIZE+1] = {0};
+    valread = recv(sock_A, M8, BLOCK_SIZE, MSG_WAITALL);
+    if(valread == 0)
+    {
+        std::cout << "client A exit the protcol before completion" << std::endl;
+        return -1;
+    }
+    M8[BLOCK_SIZE] = '\0';
+
+    std::cout << "received M8" << std::endl;
+
+    std::string to_hash2 = "1"+captcha_string+IDENTITY_A+IDENTITY_B;
+    char* this_M8 = hash(to_hash2.c_str(), to_hash2.size());
+
+    if(strcmp(this_M8, M8)!=0)
+    {
+        std::cout << "verification of hash using captcha's string failed, aborting" << std::endl;
+        return -1;
+    }
+
+    std::string to_hash3 = "2"+captcha_string+IDENTITY_A+IDENTITY_B;
+    char* sk = hash(to_hash3.c_str(), to_hash3.size());
+
+    std::cout << "calculated secret key: " << prettyHash(sk) << std::endl;
+
 
 } 
