@@ -6,10 +6,12 @@
 #include <string.h> 
 #include <iostream>
 #include "helper.hpp"
+#include "captcha.hpp"
 #include <vector>
 #include <cmath>
 #define PORTS 8080 
 #define BLOCK_SIZE 16
+#define CAPTCHA_SIZE 70*200
 
 int main() 
 { 
@@ -80,8 +82,34 @@ int main()
     srand(time(NULL));
     unsigned long long s1 = rand()%p;
     unsigned long long s2 = rand()%p;
-    unsigned long long kas = ((((long long)pow(g_x,s1))%G+G)%G);
-    unsigned long long kbs = ((((long long)pow(g_x,s2))%G+G)%G);
+    unsigned long long kas_ = ((((long long)pow(g_x,s1))%G+G)%G);
+    unsigned long long kbs_ = ((((long long)pow(g_x,s2))%G+G)%G);
+
+    char* kas = hash(to_bytes(kas_), BLOCK_SIZE)
+    char* kbs = hash(to_bytes(kas_), BLOCK_SIZE)
+
+    unsigned char l[6] = "abcde";
+    unsigned char phi1[CAPTCHA_SIZE] = create_captcha(l);
+    char* M3 = encrypt(phi1,CAPTCHA_SIZE,kbs,ivB);
+
+    unsigned long long g_s2 = ((((long long)pow(g,s2))%G+G)%G);
+    std::cout << g_s2 << std::endl;
+    char* gs2 = to_bytes(g_s2);
+    char* M4 = encrypt(gs2,BLOCK_SIZE,keyB,ivB);
+
+    unsigned char phi2[CAPTCHA_SIZE] = create_captcha(l);
+    char* M5 = encrypt(phi2,CAPTCHA_SIZE,kas,ivA);
+
+    unsigned long long g_s1 = ((((long long)pow(g,s1))%G+G)%G);
+    std::cout << g_s1 << std::endl;
+    char* gs1 = to_bytes(g_s1);
+    char* M6 = encrypt(gs1,BLOCK_SIZE,keyA,ivA);
+
+    send(client_sockets[0], M3, CAPTCHA_SIZE, 0);
+    send(client_sockets[0], M4, BLOCK_SIZE, 0);
+    send(client_sockets[0], M5, CAPTCHA_SIZE, 0);
+    send(client_sockets[0], M6, BLOCK_SIZE, 0);
+
 
     return 0; 
 } 

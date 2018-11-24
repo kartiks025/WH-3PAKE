@@ -14,6 +14,7 @@
 #define PORTS 8080 
 #define PORTB 8081 
 #define BLOCK_SIZE 16
+#define CAPTCHA_SIZE 70*200
 
 int main() 
 { 
@@ -69,5 +70,18 @@ int main()
 
     send(sock_S, M1, BLOCK_SIZE, 0);
     send(sock_S, M2, BLOCK_SIZE, 0);
+
+    unsigned char M3[CAPTCHA_SIZE] = {0};
+    valread = recv(sock_S, M3, CAPTCHA_SIZE, 0);
+
+    unsigned char M4[BLOCK_SIZE] = {0};
+    valread = recv(sock_S, M4, BLOCK_SIZE, 0);
+
+    unsigned char M5[CAPTCHA_SIZE] = {0};
+    valread = recv(sock_S, M5, CAPTCHA_SIZE, 0);
+
+    unsigned char M6[BLOCK_SIZE] = {0};
+    valread = recv(sock_S, M6, BLOCK_SIZE, 0);
+
 
 } 

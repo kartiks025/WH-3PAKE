@@ -1,11 +1,15 @@
 CC = g++
-CCLIBS = -lgcrypt
+CCLIBS = -L -lgcrypt -lcaptcha
 CCFLAGS = -std=c++11
 
 src:= $(wildcard *.cpp)
 exe:= $(patsubst %.cpp, %, $(src))
 
-all: $(exe)
+all: captcha $(exe)
+
+captcha: captcha/captcha.c captcha/captcha.hpp
+	gcc -c -fPIC captcha/captcha.c -o captcha/captcha
+	gcc -shared -o libcaptcha.so captcha/captcha
 
 $(exe): % : %.cpp
 	$(CC) $(CCFLAGS) $(CCINCLUDES) $< $(CCLIBS) -o $@
